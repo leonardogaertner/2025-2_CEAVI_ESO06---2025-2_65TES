@@ -1,0 +1,138 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #f9f9f9;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+}
+
+.form-reserva,
+.lista-reservas,
+.lista-salas {
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+h1 {
+    color: #333;
+}
+
+.form-reserva h2,
+.lista-reservas h2,
+.lista-salas h2 {
+    margin-top: 0;
+    border-bottom: 2px solid #f2f2f2;
+    padding-bottom: 10px;
+    color: #333;
+}
+
+.sala-detalhes {
+    margin-bottom: 15px;
+}
+
+.sala-detalhes h3 {
+    margin-bottom: 5px;
+    color: #0056b3;
+}
+
+.sala-detalhes ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style-type: square;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+/* Estilos para links com aparência de botão */
+.button, .button-secondary, .button-edit, .button-delete {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 20px;
+    color: white;
+    text-align: center;
+}
+
+.button {
+    background-color: #007bff; /* Azul */
+}
+
+.button-secondary {
+    background-color: #6c757d; /* Cinza */
+}
+
+.button-edit {
+    background-color: #ffc107; /* Amarelo */
+    color: #212529;
+}
+
+.button-delete {
+    background-color: #dc3545; /* Vermelho */
+}
+
+.mensagem {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.sucesso {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.erro {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}

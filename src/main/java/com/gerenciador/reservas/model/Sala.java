@@ -1,23 +1,43 @@
 package com.gerenciador.reservas.model;
 
-/**
- * Representa uma sala de reunião com suas informações básicas.
- * Esta é uma classe de dados simples (POJO).
- */
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+
+import java.util.ArrayList; // Importar ArrayList
+import java.util.List;
+
+@Entity
 public class Sala {
 
+    @Id
     private String id;
+
     private String nome;
     private int capacidade;
 
-    // Construtor para facilitar a criação de objetos Sala
+    // A LINHA ABAIXO É A CORREÇÃO:
+    // Inicializamos a lista aqui para garantir que ela nunca seja nula.
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Equipamento> equipamentos = new ArrayList<>();
+
+    // Construtor padrão agora não precisa mais inicializar a lista
+    public Sala() {
+    }
+
     public Sala(String id, String nome, int capacidade) {
         this.id = id;
         this.nome = nome;
         this.capacidade = capacidade;
+        // A lista já é inicializada na declaração, mas podemos garantir aqui também se
+        // quisermos
+        this.equipamentos = new ArrayList<>();
     }
 
-    // Getters e Setters para acessar e modificar os atributos privados
+    // --- Getters, Setters e métodos auxiliares (permanecem os mesmos) ---
+
     public String getId() {
         return id;
     }
@@ -40,5 +60,21 @@ public class Sala {
 
     public void setCapacidade(int capacidade) {
         this.capacidade = capacidade;
+    }
+
+    public List<Equipamento> getEquipamentos() {
+        return equipamentos;
+    }
+
+    public void setEquipamentos(List<Equipamento> equipamentos) {
+        this.equipamentos = equipamentos;
+    }
+
+    public void adicionarEquipamento(Equipamento equipamento) {
+        // Esta verificação não é mais estritamente necessária, mas é uma boa prática
+        if (this.equipamentos == null) {
+            this.equipamentos = new ArrayList<>();
+        }
+        this.equipamentos.add(equipamento);
     }
 }

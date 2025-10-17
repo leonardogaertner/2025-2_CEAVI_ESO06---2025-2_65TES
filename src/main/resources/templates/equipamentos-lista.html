@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciamento de Equipamentos</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Gerenciamento de Equipamentos</h1>
+        <div th:if="${mensagemSucesso}" class="mensagem sucesso" th:text="${mensagemSucesso}"></div>
+        <a href="/equipamentos/novo" class="button">Adicionar Novo Equipamento</a>
+        <a href="/" class="button-secondary">Voltar para Reservas</a>
+
+        <div class="lista-reservas">
+            <h2>Equipamentos Cadastrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="equipamento : ${equipamentos}">
+                        <td th:text="${equipamento.id}">1</td>
+                        <td th:text="${equipamento.nome}">Projetor</td>
+                        <td th:text="${equipamento.descricao}">Full HD</td>
+                        <td>
+                            <a th:href="@{/equipamentos/editar/{id}(id=${equipamento.id})}"
+                                class="button-edit">Editar</a>
+                            <a th:href="@{/equipamentos/apagar/{id}(id=${equipamento.id})}" class="button-delete"
+                                onclick="return confirm('Tem certeza?');">Apagar</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

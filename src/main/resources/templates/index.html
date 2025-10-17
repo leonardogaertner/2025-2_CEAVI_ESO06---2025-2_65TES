@@ -4,93 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Reserva de Salas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: auto;
-        }
-
-        .form-reserva,
-        .lista-reservas {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
-
-        .form-reserva h2,
-        .lista-reservas h2 {
-            margin-top: 0;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .mensagem {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-
-        .sucesso {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .erro {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
     <div class="container">
         <h1>Gerenciador de Reservas de Salas</h1>
+
+        <a href="/salas" class="button">Gerenciar Salas</a>
+        <a href="/equipamentos" class="button">Gerenciar Equipamentos</a>
+
+        <div class="lista-salas">
+            <h2>Salas Disponíveis</h2>
+            <div th:each="sala : ${salas}" class="sala-detalhes">
+                <h3 th:text="${sala.nome} + ' (Capacidade: ' + ${sala.capacidade} + ' pessoas)'"></h3>
+                <ul th:if="${!sala.equipamentos.isEmpty()}">
+                    <li th:each="equip : ${sala.equipamentos}" th:text="${equip.nome}"></li>
+                </ul>
+                <p th:if="${sala.equipamentos.isEmpty()}">Nenhum equipamento cadastrado para esta sala.</p>
+            </div>
+        </div>
 
         <div class="form-reserva">
             <h2>Nova Reserva</h2>
@@ -98,7 +31,7 @@
             <div th:if="${mensagemSucesso}" class="mensagem sucesso" th:text="${mensagemSucesso}"></div>
             <div th:if="${mensagemErro}" class="mensagem erro" th:text="${mensagemErro}"></div>
 
-            <form action="/reservar" method="post">
+            <form th:action="@{/reservar}" method="post">
                 <label for="sala">Sala:</label>
                 <select id="sala" name="idSala" required>
                     <option th:each="sala : ${salas}" th:value="${sala.id}" th:text="${sala.nome}"></option>

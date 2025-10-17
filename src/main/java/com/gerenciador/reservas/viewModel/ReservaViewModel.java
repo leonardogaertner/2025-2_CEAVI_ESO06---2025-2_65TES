@@ -1,11 +1,7 @@
-package com.gerenciador.reservas.model;
+package com.gerenciador.reservas.viewModel;
 
 import java.time.LocalDateTime;
 
-/**
- * Uma classe simples para carregar os dados de uma reserva já formatados para a
- * view.
- */
 public class ReservaViewModel {
     private String nomeResponsavel;
     private String nomeSala;
@@ -19,7 +15,6 @@ public class ReservaViewModel {
         this.dataFim = dataFim;
     }
 
-    // Getters para o Thymeleaf acessar os dados
     public String getNomeResponsavel() {
         return nomeResponsavel;
     }

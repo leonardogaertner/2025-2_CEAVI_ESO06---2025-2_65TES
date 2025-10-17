@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Equipamento</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div class="container">
+        <h1 th:if="${equipamento.id == null}">Novo Equipamento</h1>
+        <h1 th:if="${equipamento.id != null}">Editar Equipamento</h1>
+
+        <div class="form-reserva">
+            <form action="#" th:action="@{/equipamentos/salvar}" th:object="${equipamento}" method="post">
+                <input type="hidden" th:field="*{id}" />
+
+                <label for="nome">Nome do Equipamento:</label>
+                <input type="text" id="nome" th:field="*{nome}" required>
+
+                <label for="descricao">Descrição:</label>
+                <input type="text" id="descricao" th:field="*{descricao}" required>
+
+                <button type="submit">Salvar</button>
+                <a href="/equipamentos" class="button-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

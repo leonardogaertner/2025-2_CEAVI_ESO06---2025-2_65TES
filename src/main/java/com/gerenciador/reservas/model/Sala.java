@@ -9,13 +9,20 @@ import jakarta.persistence.FetchType;
 import java.util.ArrayList; // Importar ArrayList
 import java.util.List;
 
+import jakarta.validation.constraints.NotBlank; // IMPORTAR
+import jakarta.validation.constraints.Min; // IMPORTAR
+
 @Entity
 public class Sala {
 
     @Id
+    @NotBlank(message = "O ID é obrigatório")
     private String id;
 
+    @NotBlank(message = "O Nome é obrigatório")
     private String nome;
+
+    @Min(value = 1, message = "A capacidade deve ser pelo menos 1")
     private int capacidade;
 
     // A LINHA ABAIXO É A CORREÇÃO:

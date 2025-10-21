@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity // Define que esta classe é uma tabela no banco de dados
 public class Equipamento {
@@ -12,7 +13,9 @@ public class Equipamento {
     @GeneratedValue(strategy = GenerationType.AUTO) // Define que o ID será gerado automaticamente
     private Long id; // É uma boa prática usar Long para IDs gerados automaticamente
 
+    @NotBlank(message = "O Nome é obrigatório") // ADICIONAR
     private String nome;
+
     private String descricao;
 
     // Construtor padrão exigido pelo JPA

@@ -91,11 +91,11 @@ public class SalaController {
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Sala apagada com sucesso!");
 
         } catch (EmptyResultDataAccessException e) {
-            // 2. CAPTURAR A EXCEÇÃO
-            // Isto acontece se o ID não for encontrado
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro: Sala com ID " + id + " não foi encontrada.");
+        } catch (DataIntegrityViolationException e) { // <-- ADICIONAR ESTE BLOCO
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Não é possível excluir esta sala, pois ela possui reservas ativas ou está associada a outros dados.");
         }
-
         return "redirect:/salas";
     }
 }

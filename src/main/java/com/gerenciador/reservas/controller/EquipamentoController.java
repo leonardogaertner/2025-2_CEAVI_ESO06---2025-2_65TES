@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 @Controller
@@ -58,13 +59,15 @@ public class EquipamentoController {
 
     @GetMapping("/apagar/{id}")
     public String apagarEquipamento(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        // 2. ADICIONAR TRY-CATCH
         try {
             equipamentoRepository.deleteById(id);
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Equipamento apagado com sucesso!");
         } catch (EmptyResultDataAccessException e) {
             redirectAttributes.addFlashAttribute("mensagemErro",
                     "Erro: Equipamento com ID " + id + " não foi encontrado.");
+        } catch (DataIntegrityViolationException e) { // <-- ADICIONAR ESTE BLOCO
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Este equipamento não pode ser excluído, pois está associado a uma ou mais salas.");
         }
         return "redirect:/equipamentos";
     }

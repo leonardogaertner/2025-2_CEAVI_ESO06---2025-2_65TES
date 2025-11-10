@@ -1,14 +1,13 @@
 package com.gerenciador.reservas;
 
-import com.gerenciador.reservas.controller.EquipamentoController;
-import com.gerenciador.reservas.controller.ReservaController;
-import com.gerenciador.reservas.controller.SalaController;
-import com.gerenciador.reservas.model.Equipamento;
-import com.gerenciador.reservas.model.Reserva;
-import com.gerenciador.reservas.model.Sala;
-import com.gerenciador.reservas.repository.EquipamentoRepository;
-import com.gerenciador.reservas.repository.ReservaRepository;
-import com.gerenciador.reservas.repository.SalaRepository;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,10 +21,15 @@ import org.springframework.validation.support.BindingAwareModelMap;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.gerenciador.reservas.controller.EquipamentoController;
+import com.gerenciador.reservas.controller.ReservaController;
+import com.gerenciador.reservas.controller.SalaController;
+import com.gerenciador.reservas.model.Equipamento;
+import com.gerenciador.reservas.model.Reserva;
+import com.gerenciador.reservas.model.Sala;
+import com.gerenciador.reservas.repository.EquipamentoRepository;
+import com.gerenciador.reservas.repository.ReservaRepository;
+import com.gerenciador.reservas.repository.SalaRepository;
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -55,6 +59,8 @@ class IntegracaoSistemaTest {
         // Cria um BindingResult vazio (sem erros) para passar aos métodos
         bindingResult = new BeanPropertyBindingResult(null, "");
     }
+
+    // --- SEUS 4 TESTES ORIGINAIS ---
 
     @Test
     @DisplayName("CT01: Deve associar equipamento recém-criado a uma sala")
@@ -159,5 +165,178 @@ class IntegracaoSistemaTest {
         // Verifica se o equipamento e a sala ainda existem
         assertEquals(1, equipamentoRepository.count());
         assertEquals(1, salaRepository.count());
+    }
+
+    // --- NOVOS 6 TESTES DE INTEGRAÇÃO (CT05-CT10) ---
+
+    @Test
+    @DisplayName("CT05: Deve falhar ao reservar com conflito de horário (Integração)")
+    void integracao_CT05_ConflitoDeReserva() {
+        // Arrange
+        Sala sala = salaRepository.save(new Sala("S100", "Sala Conflito", 10));
+        LocalDateTime inicio = LocalDateTime.of(2025, 11, 20, 14, 0);
+        LocalDateTime fim = LocalDateTime.of(2025, 11, 20, 15, 0);
+
+        // Act 1: Fazer a primeira reserva (caminho feliz)
+        reservaController.processarReserva(sala.getId(), "Ana", inicio, fim, model);
+
+        // Assert 1
+        assertEquals("Reserva realizada com sucesso!", model.getAttribute("mensagemSucesso"));
+
+        // Act 2: Tentar reservar um horário conflitante
+        LocalDateTime inicioConflito = LocalDateTime.of(2025, 11, 20, 14, 30);
+        LocalDateTime fimConflito = LocalDateTime.of(2025, 11, 20, 15, 30);
+        // Novo model para capturar a resposta da segunda chamada
+        Model modelConflito = new BindingAwareModelMap();
+        reservaController.processarReserva(sala.getId(), "Bruno", inicioConflito, fimConflito, modelConflito);
+
+        // Assert 2
+        assertEquals("O horário solicitado para esta sala já está reservado.", modelConflito.getAttribute("mensagemErro"));
+        assertEquals(1, reservaRepository.count()); // Apenas a primeira reserva deve existir
+    }
+
+    @Test
+    @DisplayName("CT06: Deve ATUALIZAR sala com ID duplicado (Integração)")
+    void integracao_CT06_SalvarSalaComIdDuplicado() {
+        // Arrange
+        Sala s1 = new Sala("S_DUP", "Sala Original", 10);
+        
+        // Act 1: Salvar a primeira sala
+        String viewName1 = salaController.salvarSala(s1, bindingResult, redirectAttrs, model);
+
+        // Assert 1
+        assertEquals("redirect:/salas", viewName1);
+        assertEquals("Sala salva com sucesso!", redirectAttrs.getFlashAttributes().get("mensagemSucesso"));
+        assertEquals(1, salaRepository.count()); // Garante que 1 sala foi criada
+
+        // Arrange 2
+        Sala s2 = new Sala("S_DUP", "Sala Duplicada", 5); // Mesmo ID, nome diferente
+        // Limpa os atributos de redirecionamento para a segunda chamada
+        redirectAttrs.getFlashAttributes().clear(); // Correção: usar .clear() em vez de reatribuir
+        
+        // Act 2: Tentar salvar a segunda sala com mesmo ID (isso irá ATUALIZAR)
+        String viewName2 = salaController.salvarSala(s2, bindingResult, redirectAttrs, model);
+
+        // Assert 2 (CORRIGIDO)
+        assertEquals("redirect:/salas", viewName2);
+        
+        // Verifique se a ATUALIZAÇÃO foi bem-sucedida
+        assertEquals("Sala salva com sucesso!", redirectAttrs.getFlashAttributes().get("mensagemSucesso"));
+        
+        // Verifique se a mensagem de ERRO está (corretamente) nula
+        assertNull(redirectAttrs.getFlashAttributes().get("mensagemErro"));
+        
+        // Verifique se o número de salas no banco AINDA é 1
+        assertEquals(1, salaRepository.count()); 
+        
+        // Verifique se o nome da sala foi atualizado para o nome de s2
+        Sala salaAtualizada = salaRepository.findById("S_DUP").orElseThrow();
+        assertEquals("Sala Duplicada", salaAtualizada.getNome());
+        assertEquals(5, salaAtualizada.getCapacidade());
+    }
+    
+    @Test
+    @DisplayName("CT07: Deve falhar ao salvar sala com nome vazio (BindingResult Integração)")
+    void integracao_CT07_ValidacaoDeController() {
+        // Arrange: Cria uma sala inválida (nome vazio)
+        Sala salaInvalida = new Sala("S_VALID", "", 10);
+        // Cria um BindingResult real para esta sala
+        BindingResult brInvalido = new BeanPropertyBindingResult(salaInvalida, "sala");
+        // Simula o erro que o validador @NotBlank colocaria
+        brInvalido.rejectValue("nome", "NotBlank", "O Nome é obrigatório");
+
+        // Act
+        String viewName = salaController.salvarSala(salaInvalida, brInvalido, redirectAttrs, model);
+
+        // Assert
+        // Deve retornar ao formulário, e não redirecionar
+        assertEquals("sala-form", viewName);
+        // Nenhum atributo de sucesso/erro de *redirecionamento* deve ser setado
+        assertTrue(redirectAttrs.getFlashAttributes().isEmpty());
+        // O banco não deve ter sido tocado
+        assertEquals(0, salaRepository.count());
+    }
+
+    @Test
+    @DisplayName("CT08: Deve remover associação de equipamento ao editar sala (Integração)")
+    void integracao_CT08_RemoverAssociacao() {
+        // Arrange
+        Equipamento e1 = equipamentoRepository.save(new Equipamento("Projetor", ""));
+        Sala s1 = new Sala("S_EDIT", "Sala com Equipamento", 10);
+        s1.setEquipamentos(List.of(e1));
+
+        // Act 1: Salvar a sala com o equipamento
+        salaController.salvarSala(s1, bindingResult, redirectAttrs, model);
+        
+        // Assert 1: Verifica se foi salvo corretamente
+        Sala salaSalva = salaRepository.findById("S_EDIT").orElseThrow();
+        assertEquals(1, salaSalva.getEquipamentos().size());
+
+        // Act 2: Salvar a mesma sala, mas com a lista de equipamentos vazia
+        salaSalva.setEquipamentos(Collections.emptyList());
+        BindingResult bindingResultEdit = new BeanPropertyBindingResult(salaSalva, "sala"); // Novo BindingResult
+        redirectAttrs = new RedirectAttributesModelMap(); // Limpar atributos
+        salaController.salvarSala(salaSalva, bindingResultEdit, redirectAttrs, model);
+
+        // Assert 2: Verifica se a associação foi removida
+        Sala salaAtualizada = salaRepository.findById("S_EDIT").orElseThrow();
+        assertEquals(0, salaAtualizada.getEquipamentos().size());
+        assertEquals("Sala salva com sucesso!", redirectAttrs.getFlashAttributes().get("mensagemSucesso"));
+    }
+
+    @Test
+    @DisplayName("CT09: Deve exibir salas e equipamentos na página principal (Integração)")
+    void integracao_CT09_VisualizacaoDadosNaHome() {
+        // Arrange: Configura o banco com dados
+        Equipamento e1 = equipamentoRepository.save(new Equipamento("Projetor", ""));
+        Sala s1 = new Sala("S_HOME", "Sala Home", 10);
+        s1.setEquipamentos(List.of(e1));
+        salaRepository.save(s1);
+
+        // Act: Chama o método do controller da página principal
+        Model modelHome = new BindingAwareModelMap();
+        String viewName = reservaController.exibirFormulario(modelHome);
+
+        // Assert
+        assertEquals("index", viewName);
+        
+        // Verifica se os dados corretos estão no model
+        @SuppressWarnings("unchecked")
+        List<Sala> salasDoModel = (List<Sala>) modelHome.getAttribute("salas");
+        
+        assertNotNull(salasDoModel);
+        assertEquals(1, salasDoModel.size());
+        assertEquals("S_HOME", salasDoModel.get(0).getId());
+        assertEquals(1, salasDoModel.get(0).getEquipamentos().size());
+        assertEquals("Projetor", salasDoModel.get(0).getEquipamentos().get(0).getNome());
+    }
+
+    @Test
+    @DisplayName("CT10: Deve apagar sala com sucesso após remover reservas (Integração)")
+    void integracao_CT10_ExclusaoLimpaAposRemoverDependencia() {
+        // Arrange
+        Sala s1 = salaRepository.save(new Sala("S_DEL", "Sala Delete", 10));
+        Reserva r1 = reservaRepository.save(new Reserva("Ana", s1, 
+                            LocalDateTime.now().plusDays(1), 
+                            LocalDateTime.now().plusDays(2)));
+
+        // Act 1: Tentar apagar (deve falhar)
+        salaController.apagarSala(s1.getId(), redirectAttrs);
+        
+        // Assert 1
+        assertNotNull(redirectAttrs.getFlashAttributes().get("mensagemErro"));
+        assertEquals(1, salaRepository.count()); // Sala ainda existe
+
+        // Act 2: Remover a dependência (reserva)
+        reservaRepository.delete(r1);
+        redirectAttrs = new RedirectAttributesModelMap(); // Limpar atributos
+
+        // Act 3: Tentar apagar novamente (deve funcionar)
+        salaController.apagarSala(s1.getId(), redirectAttrs);
+
+        // Assert 3
+        assertNotNull(redirectAttrs.getFlashAttributes().get("mensagemSucesso"));
+        assertNull(redirectAttrs.getFlashAttributes().get("mensagemErro"));
+        assertEquals(0, salaRepository.count()); // Sala foi apagada
     }
 }

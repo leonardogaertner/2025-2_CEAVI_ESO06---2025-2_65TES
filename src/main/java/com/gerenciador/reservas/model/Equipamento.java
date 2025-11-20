@@ -5,15 +5,19 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Entity // Define que esta classe é uma tabela no banco de dados
 public class Equipamento {
 
-    @Id // Marca o campo 'id' como a chave primária da tabela
-    @GeneratedValue(strategy = GenerationType.AUTO) // Define que o ID será gerado automaticamente
-    private Long id; // É uma boa prática usar Long para IDs gerados automaticamente
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-    @NotBlank(message = "O Nome é obrigatório") // ADICIONAR
+    @NotBlank(message = "O Nome é obrigatório")
+    @Size(min = 3, max = 20, message = "O nome deve ter entre 3 e 20 caracteres")
+    @Pattern(regexp = "^[a-zA-Z0-9À-ÿ _]+$", message = "O nome não deve conter caracteres especiais (apenas letras, números, espaços e underscore)")
     private String nome;
 
     private String descricao;

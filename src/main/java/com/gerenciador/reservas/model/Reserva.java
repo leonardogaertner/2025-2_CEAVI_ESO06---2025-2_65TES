@@ -14,7 +14,6 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long idReserva;
 
-    // VOLTOU A SER UMA STRING SIMPLES
     private String nomeResponsavel;
 
     @ManyToOne
@@ -26,7 +25,6 @@ public class Reserva {
     public Reserva() {
     }
 
-    // CONSTRUTOR ATUALIZADO
     public Reserva(String nomeResponsavel, Sala sala, LocalDateTime dataInicio, LocalDateTime dataFim) {
         this.nomeResponsavel = nomeResponsavel;
         this.sala = sala;
@@ -34,7 +32,6 @@ public class Reserva {
         this.dataFim = dataFim;
     }
 
-    // GETTERS E SETTERS ATUALIZADOS
     public Long getIdReserva() {
         return idReserva;
     }

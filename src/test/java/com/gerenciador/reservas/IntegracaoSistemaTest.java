@@ -60,8 +60,6 @@ class IntegracaoSistemaTest {
         bindingResult = new BeanPropertyBindingResult(null, "");
     }
 
-    // --- SEUS 4 TESTES ORIGINAIS ---
-
     @Test
     @DisplayName("CT01: Deve associar equipamento recém-criado a uma sala")
     void integracao_CT01_EquipamentoParaSala() {
@@ -166,8 +164,6 @@ class IntegracaoSistemaTest {
         assertEquals(1, equipamentoRepository.count());
         assertEquals(1, salaRepository.count());
     }
-
-    // --- NOVOS 6 TESTES DE INTEGRAÇÃO (CT05-CT10) ---
 
     @Test
     @DisplayName("CT05: Deve falhar ao reservar com conflito de horário (Integração)")

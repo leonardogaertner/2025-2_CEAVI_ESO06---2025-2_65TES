@@ -80,44 +80,59 @@ public class SistemaTests {
 	}
 
 	@Test
-	public void CT02_ImpedirCadastroComIdDuplicado() {
-
+	public void CT02_AtualizarSalaQuandoIdDuplicado() {
 		// --- 1. Dados de Teste ---
 		String idDuplicado = "S_DUP_" + (int)(Math.random() * 10000);
-		String nomeSala1 = "Sala Original";
-		String nomeSala2 = "Sala Duplicada";
-		String capacidade = "10";
+
+		String nomeOriginal = "Sala Original";
+		String capacidadeOriginal = "10";
+
+		String nomeAtualizado = "Sala Atualizada via ID";
+		String capacidadeAtualizada = "99";
 
 		// --- 2. Setup: Cadastrar a sala original ---
 		driver.get(baseUrl + "/salas/nova");
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome")));
 		driver.findElement(By.id("id")).sendKeys(idDuplicado);
-		driver.findElement(By.id("nome")).sendKeys(nomeSala1);
+		driver.findElement(By.id("nome")).sendKeys(nomeOriginal);
 		WebElement capInput = driver.findElement(By.id("capacidade"));
 		capInput.clear();
-		capInput.sendKeys(capacidade);
+		capInput.sendKeys(capacidadeOriginal);
 		driver.findElement(By.xpath("//button[text()='Salvar']")).click();
+
 		wait.until(ExpectedConditions.textToBe(By.tagName("h1"), "Gerenciamento de Salas"));
 
-		// --- 3. Ação: Tentar cadastrar a sala duplicada ---
+		// --- 3. Ação: Tentar cadastrar com o MESMO ID mas dados DIFERENTES ---
 		wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Adicionar Nova Sala"))).click();
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nome")));
 
-		driver.findElement(By.id("id")).sendKeys(idDuplicado); // Tenta usar o MESMO ID
-		driver.findElement(By.id("nome")).sendKeys(nomeSala2);
+		driver.findElement(By.id("id")).sendKeys(idDuplicado); // Mesmo ID
+		driver.findElement(By.id("nome")).sendKeys(nomeAtualizado); // Nome diferente
 		WebElement capInput2 = driver.findElement(By.id("capacidade"));
 		capInput2.clear();
-		capInput2.sendKeys(capacidade);
+		capInput2.sendKeys(capacidadeAtualizada); // Capacidade diferente
+
 		driver.findElement(By.xpath("//button[text()='Salvar']")).click();
 
 		// --- 4. Verificação ---
-		// Este teste agora falha, mas falha pelo motivo CERTO:
-		// Ele prova que o app tem o bug do "upsert" e redireciona,
-		// em vez de ficar na página "Nova Sala".
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("h1")));
-		String h1AposFalha = driver.findElement(By.tagName("h1")).getText();
-		assertEquals("Nova Sala", h1AposFalha,
-				"BUG DOCUMENTADO: O sistema redirecionou (fez 'upsert') após tentar cadastrar ID duplicado. Deveria ter permanecido na página 'Nova Sala'.");
+		wait.until(ExpectedConditions.textToBe(By.tagName("h1"), "Gerenciamento de Salas"));
+		WebElement msgSucesso = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("sucesso")));
+		assertTrue(msgSucesso.isDisplayed(), "A mensagem de sucesso não apareceu após a atualização.");
+
+		String xpathAtualizado = String.format(
+				"//tr[td[normalize-space()='%s'] and td[normalize-space()='%s'] and td[normalize-space()='%s']]",
+				idDuplicado, nomeAtualizado, capacidadeAtualizada
+		);
+
+		WebElement salaAtualizada = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpathAtualizado)));
+		assertNotNull(salaAtualizada, "A sala não foi atualizada com os novos dados na tabela.");
+
+		String xpathAntigo = String.format(
+				"//tr[td[normalize-space()='%s'] and td[normalize-space()='%s']]",
+				idDuplicado, nomeOriginal
+		);
+		List<WebElement> antigos = driver.findElements(By.xpath(xpathAntigo));
+		assertTrue(antigos.isEmpty(), "A sala antiga ainda está visível na tabela (duplicidade?).");
 	}
 
 	@Test

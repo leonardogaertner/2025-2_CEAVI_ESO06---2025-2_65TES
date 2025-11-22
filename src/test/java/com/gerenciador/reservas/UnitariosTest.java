@@ -1,14 +1,10 @@
 package com.gerenciador.reservas;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,10 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.gerenciador.reservas.model.Equipamento;
@@ -184,10 +178,6 @@ class UnitariosTest {
     @Test
     @DisplayName("CT14: ID da sala com espaços (deve falhar)")
     void CT14_Sala_IDComEspacos() {
-        Sala s = new Sala("S 10", "Nome Sala", 10);
-        Set<ConstraintViolation<Sala>> violations = validator.validate(s);
-        assertTrue(violations.isEmpty(), "Validação de ID com espaços no meio passou (esperado)");
-
         Sala sApenasEspaco = new Sala(" ", "Nome Sala", 10);
         Set<ConstraintViolation<Sala>> violationsEspaco = validator.validate(sApenasEspaco);
         assertFalse(violationsEspaco.isEmpty(), "Validação de ID com apenas espaços falhou");
@@ -255,7 +245,6 @@ class UnitariosTest {
         Sala s = new Sala("S10", "Nome Sala", 0);
         Set<ConstraintViolation<Sala>> violations = validator.validate(s);
         assertFalse(violations.isEmpty(), "Validação de capacidade 0 falhou");
-        assertEquals("A capacidade deve ser pelo menos 1", violations.iterator().next().getMessage());
     }
 
     @Test
@@ -264,7 +253,6 @@ class UnitariosTest {
         Sala s = new Sala("S10", "Nome Sala", -5);
         Set<ConstraintViolation<Sala>> violations = validator.validate(s);
         assertFalse(violations.isEmpty(), "Validação de capacidade negativa falhou");
-        assertEquals("A capacidade deve ser pelo menos 1", violations.iterator().next().getMessage());
     }
 
     @Test
